@@ -1,0 +1,17 @@
+{
+    "ts-node": {  "files": true },
+    "compilerOptions": {
+      "esModuleInterop": true,
+      "exactOptionalPropertyTypes": true,
+      "forceConsistentCasingInFileNames": true,
+      "lib": ["ESNext", "DOM"],
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "noEmit": true,
+      "noErrorTruncation": true,
+      "noUncheckedIndexedAccess": true,
+      "strict": true,
+      "target": "ESNext"
+    },
+    "exclude": ["./dist/**/*"]
+}
