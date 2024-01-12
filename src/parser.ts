@@ -106,8 +106,6 @@ class DemoParser {
         messageType === DemoCommand.DEM_AnimationData ||
         messageType === DemoCommand.DEM_Packet;
 
-      console.log(messageType, command, tick, size, isCompressed, shouldSkip);
-
       if (shouldSkip) {
         this.#reader.skip(size);
         continue;

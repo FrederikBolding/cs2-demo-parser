@@ -1,3 +1,9 @@
+import {
+  CDemoFileHeader,
+  CDemoPacket,
+  CDemoSendTables,
+} from "./generated/demo";
+
 export enum DemoCommand {
   DEM_Error = -1,
   DEM_Stop = 0,
@@ -21,12 +27,38 @@ export enum DemoCommand {
   DEM_IsCompressed = 64,
 }
 
-function parseFileHeader(bytes: Uint8Array) {}
+function parseFileHeader(bytes: Uint8Array) {
+  const header = CDemoFileHeader.decode(bytes);
+  console.log(header);
+  return header;
+}
+
+function parseSignOnPacket(bytes: Uint8Array) {
+  const packet = CDemoPacket.decode(bytes);
+  // TODO: Decode inner messages
+  console.log(packet);
+  throw new Error('Failed to decode sign on packet')
+  return packet;
+}
+
+function parseSendTables(bytes: Uint8Array) {
+  const tables = CDemoSendTables.decode(bytes);
+  // TODO: Decode tables
+  console.log(tables);
+  throw new Error('Failed to decode send tables')
+  return tables;
+}
 
 export function parseMessage(type: DemoCommand, bytes: Uint8Array) {
   switch (type) {
     case DemoCommand.DEM_FileHeader: {
       return parseFileHeader(bytes);
+    }
+    case DemoCommand.DEM_SignonPacket: {
+      return parseSignOnPacket(bytes);
+    }
+    case DemoCommand.DEM_SendTables: {
+      return parseSendTables(bytes);
     }
     default:
       throw new Error(`Cannot parse message of type "${type}"`);
