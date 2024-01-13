@@ -1,5 +1,5 @@
 import { ReadableStream } from "stream/web";
-import { DemoCommand, parseMessage } from "./commands";
+import { DemoCommand, PARSEABLE_DEMO_COMMANDS, parseMessage } from "./commands";
 import { uncompress as decompress } from "snappyjs";
 
 class StreamReader {
@@ -102,11 +102,8 @@ class DemoParser {
 
       const isCompressed = (command & 64) == 64;
       const messageType = (command & -65) as DemoCommand;
-      const shouldSkip =
-        messageType === DemoCommand.DEM_AnimationData ||
-        messageType === DemoCommand.DEM_Packet;
 
-      if (shouldSkip) {
+      if (!PARSEABLE_DEMO_COMMANDS.includes(command)) {
         this.#reader.skip(size);
         continue;
       }

@@ -1,8 +1,11 @@
+import { ByteReader } from "./bytes";
 import {
+  CDemoClassInfo,
   CDemoFileHeader,
-  CDemoPacket,
   CDemoSendTables,
 } from "./generated/demo";
+import { CSVCMsg_FlattenedSerializer } from "./generated/netmessages";
+import { parseFullPacket, parsePacket } from "./packet";
 
 export enum DemoCommand {
   DEM_Error = -1,
@@ -33,34 +36,47 @@ function parseFileHeader(bytes: Uint8Array) {
   return header;
 }
 
-function parseSignOnPacket(bytes: Uint8Array) {
-  const packet = CDemoPacket.decode(bytes);
-  // TODO: Decode inner messages
-  console.log(packet);
-  throw new Error('Failed to decode sign on packet')
-  return packet;
-}
-
 function parseSendTables(bytes: Uint8Array) {
   const tables = CDemoSendTables.decode(bytes);
-  // TODO: Decode tables
-  console.log(tables);
-  throw new Error('Failed to decode send tables')
-  return tables;
+  const byteReader = new ByteReader(tables.data);
+  const length = byteReader.readVarint();
+  const tableBytes = byteReader.read(length);
+  const serializer = CSVCMsg_FlattenedSerializer.decode(tableBytes);
+  // TODO: Decode further
+  return serializer;
 }
+
+function parseClassInfo(bytes: Uint8Array) {
+  const classInfo = CDemoClassInfo.decode(bytes);
+  // TODO: Decode further
+  return classInfo;
+}
+
+export const PARSEABLE_DEMO_COMMANDS = [
+  DemoCommand.DEM_Stop,
+  DemoCommand.DEM_FileHeader,
+  DemoCommand.DEM_SignonPacket,
+  DemoCommand.DEM_Packet,
+  DemoCommand.DEM_FullPacket,
+  DemoCommand.DEM_SendTables,
+  DemoCommand.DEM_ClassInfo,
+];
 
 export function parseMessage(type: DemoCommand, bytes: Uint8Array) {
   switch (type) {
-    case DemoCommand.DEM_FileHeader: {
+    case DemoCommand.DEM_FileHeader:
       return parseFileHeader(bytes);
-    }
-    case DemoCommand.DEM_SignonPacket: {
-      return parseSignOnPacket(bytes);
-    }
-    case DemoCommand.DEM_SendTables: {
+    case DemoCommand.DEM_SignonPacket:
+    case DemoCommand.DEM_Packet:
+      return parsePacket(bytes);
+    case DemoCommand.DEM_SendTables:
       return parseSendTables(bytes);
-    }
+    case DemoCommand.DEM_ClassInfo:
+      return parseClassInfo(bytes);
+    case DemoCommand.DEM_FullPacket:
+      return parseFullPacket(bytes);
+
     default:
-      throw new Error(`Cannot parse message of type "${type}"`);
+      return null;
   }
 }
