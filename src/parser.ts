@@ -116,7 +116,7 @@ class DemoParser {
       const isCompressed = (command & 64) == 64;
       const messageType = (command & -65) as DemoCommand;
 
-      if (!PARSEABLE_DEMO_COMMANDS.includes(command)) {
+      if (!PARSEABLE_DEMO_COMMANDS.includes(messageType)) {
         this.#reader.skip(size);
         continue;
       }
