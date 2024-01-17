@@ -66,6 +66,22 @@ export class ByteReader {
     return value;
   }
 
+  readBoolean() {
+    return this.readBits(1) !== 0;
+  }
+
+  readString() {
+    const chars = [];
+    while (true) {
+      const char = this.readByte();
+      if (char === 0) {
+        break;
+      }
+      chars.push(char);
+    }
+    return new TextDecoder().decode(new Uint8Array(chars));
+  }
+
   readUBitVar() {
     const bits = this.readBits(6);
 

@@ -6,6 +6,7 @@ import {
 } from "./generated/demo";
 import { CSVCMsg_FlattenedSerializer } from "./generated/netmessages";
 import { parseFullPacket, parsePacket } from "./packet";
+import { DemoParser } from "./parser";
 
 export enum DemoCommand {
   DEM_Error = -1,
@@ -48,8 +49,9 @@ function parseSendTables(bytes: Uint8Array) {
 
 function parseClassInfo(bytes: Uint8Array) {
   const classInfo = CDemoClassInfo.decode(bytes);
+  const classes = classInfo.classes;
   // TODO: Decode further
-  return classInfo;
+  return classes;
 }
 
 export const PARSEABLE_DEMO_COMMANDS = [
@@ -62,19 +64,23 @@ export const PARSEABLE_DEMO_COMMANDS = [
   DemoCommand.DEM_ClassInfo,
 ];
 
-export function parseMessage(type: DemoCommand, bytes: Uint8Array) {
+export function parseMessage(
+  parser: DemoParser,
+  type: DemoCommand,
+  bytes: Uint8Array
+) {
   switch (type) {
     case DemoCommand.DEM_FileHeader:
       return parseFileHeader(bytes);
     case DemoCommand.DEM_SignonPacket:
     case DemoCommand.DEM_Packet:
-      return parsePacket(bytes);
+      return parsePacket(parser, bytes);
     case DemoCommand.DEM_SendTables:
       return parseSendTables(bytes);
     case DemoCommand.DEM_ClassInfo:
       return parseClassInfo(bytes);
     case DemoCommand.DEM_FullPacket:
-      return parseFullPacket(bytes);
+      return parseFullPacket(parser, bytes);
 
     default:
       return null;
