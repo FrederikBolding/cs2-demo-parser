@@ -2,38 +2,51 @@ import { ReadableStream } from "stream/web";
 import { DemoCommand, PARSEABLE_DEMO_COMMANDS, parseMessage } from "./commands";
 import { uncompress as decompress } from "snappyjs";
 
+const ALLOCATION_SIZE = 10000000; // 10 mb at a time
+
 class StreamReader {
   #reader: ReadableStreamDefaultReader<Uint8Array>;
   #buffer: Uint8Array;
-  #pointer: number;
+  #readPointer: number;
+  #writePointer: number;
   #done: boolean;
 
   constructor(stream: ReadableStream) {
     this.#reader =
       stream.getReader() as ReadableStreamDefaultReader<Uint8Array>;
-    this.#buffer = new Uint8Array();
-    this.#pointer = 0;
+    this.#buffer = new Uint8Array(ALLOCATION_SIZE);
+    this.#writePointer = 0;
+    this.#readPointer = 0;
     this.#done = false;
   }
 
+  #allocate(allocation: number) {
+    var newBuffer = new Uint8Array(this.#buffer.length + allocation);
+    newBuffer.set(this.#buffer);
+    this.#buffer = newBuffer;
+  }
+
   #push(chunk: Uint8Array) {
-    var mergedBuffer = new Uint8Array(this.#buffer.length + chunk.length);
-    mergedBuffer.set(this.#buffer);
-    mergedBuffer.set(chunk, this.#buffer.length);
-    this.#buffer = mergedBuffer;
+    const start = this.#writePointer;
+    const end = this.#writePointer + chunk.length;
+    if (end >= this.#buffer.length) {
+      this.#allocate(Math.max(ALLOCATION_SIZE, chunk.length));
+    }
+    this.#buffer.set(chunk, start);
+    this.#writePointer += chunk.length;
     // TODO: Throw away read bytes?
   }
 
   skip(n: number) {
-    this.#pointer = this.#pointer + n;
+    this.#readPointer = this.#readPointer + n;
   }
 
   async read(n: number): Promise<Uint8Array> {
-    const start = this.#pointer;
-    const end = this.#pointer + n;
-    if (this.#buffer.length >= end) {
-      this.#pointer = end;
-      return this.#buffer.slice(start, end);
+    const start = this.#readPointer;
+    const end = this.#readPointer + n;
+    if (this.#writePointer >= end) {
+      this.#readPointer = end;
+      return this.#buffer.subarray(start, end);
     }
 
     if (this.#done) {

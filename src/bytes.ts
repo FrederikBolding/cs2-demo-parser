@@ -36,7 +36,7 @@ export class ByteReader {
     }
 
     this.#pointer = end;
-    return this.#buffer.slice(start, end);
+    return this.#buffer.subarray(start, end);
   }
 
   readByte() {
@@ -48,7 +48,7 @@ export class ByteReader {
     if (this.getBytesLeft() <= 0) {
       throw new Error("ByteReader out of range");
     }
-    const bytes = this.#buffer.slice(this.#pointer, this.#pointer + 1);
+    const bytes = this.#buffer.subarray(this.#pointer, this.#pointer + 1);
     this.#pointer++;
     return bytes[0]!;
   }
