@@ -16,6 +16,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "heap-js": "^2.3.0",
     "protobufjs": "^7.2.5",
     "snappyjs": "^0.7.0"
   }

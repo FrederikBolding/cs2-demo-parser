@@ -1,8 +1,12 @@
 import { ByteReader } from "./bytes";
+import { readFieldPaths } from "./field-paths";
 import { CSVCMsg_PacketEntities } from "./generated/netmessages";
 import { DemoParser } from "./parser";
 
 function updateEntity(parser: DemoParser, reader: ByteReader, index: number) {
+  const fieldPaths = readFieldPaths(reader);
+  console.log(fieldPaths);
+  throw new Error("Entity update failed");
   // TODO: Huffman Trees
 }
 

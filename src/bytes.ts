@@ -44,7 +44,7 @@ export class ByteReader {
     return bytes[0]!;
   }
 
-  readByteAligned() {
+  #readByteAligned() {
     if (this.getBytesLeft() <= 0) {
       throw new Error("ByteReader out of range");
     }
@@ -55,7 +55,7 @@ export class ByteReader {
 
   readBits(n: number) {
     while (this.#bitPointer < n) {
-      const byte = this.readByteAligned();
+      const byte = this.#readByteAligned();
       this.#bitValue = this.#bitValue | (byte << this.#bitPointer);
       this.#bitPointer += 8;
     }
@@ -109,5 +109,25 @@ export class ByteReader {
       }
     }
     return result;
+  }
+
+  readUBitVarFieldPath() {
+    if (this.readBoolean()) {
+      return this.readBits(2);
+    }
+
+    if (this.readBoolean()) {
+      return this.readBits(4);
+    }
+
+    if (this.readBoolean()) {
+      return this.readBits(10);
+    }
+
+    if (this.readBoolean()) {
+      return this.readBits(17);
+    }
+
+    return this.readBits(31);
   }
 }
